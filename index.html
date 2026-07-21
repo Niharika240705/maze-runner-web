@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maze Runner - Kruskal & Dijkstra</title>
+  <!-- Google Fonts for modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <h1>MAZE RUNNER</h1>
+      </div>
+      <div class="header-status">
+        <span class="status-badge" id="modeBadge">Classic Mode</span>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="game-layout">
+      <!-- Game Canvas Container -->
+      <section class="canvas-section">
+        <div class="canvas-card">
+          <canvas id="gameCanvas"></canvas>
+        </div>
+      </section>
+
+      <!-- Sidebar Controls & Stats -->
+      <aside class="sidebar-section">
+        <!-- Goal Panel -->
+        <div class="panel goal-panel" style="border-color: rgba(230, 180, 20, 0.35); background: rgba(230, 180, 20, 0.04);">
+          <h2>CURRENT MISSION</h2>
+          <p style="font-size: 0.88rem; line-height: 1.45; color: var(--color-text-dim); margin-top: 4px;">
+            Collect all <span style="color: var(--accent-amber); font-weight: 600;">12 golden coins</span> to unlock the escape portal, then reach the portal (<span style="color: var(--accent-emerald); font-weight: 600;">GOAL</span>) to escape and win!
+          </p>
+        </div>
+
+        <!-- Stats Panel -->
+        <div class="panel stats-panel">
+          <h2>STATS</h2>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <span class="stat-label">TIME REMAINING</span>
+              <div class="progress-bar-container">
+                <div class="progress-bar" id="timeProgress" style="width: 100%;"></div>
+              </div>
+              <span class="stat-value highlight-blue" id="timeVal">120s</span>
+            </div>
+            
+            <div class="stat-box">
+              <span class="stat-label">COINS COLLECTED</span>
+              <span class="stat-value highlight-amber" id="coinsVal">0 / 12</span>
+            </div>
+
+            <div class="stat-box">
+              <span class="stat-label">CURRENT SEED</span>
+              <span class="stat-value" id="seedVal">---------</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Panel -->
+        <div class="panel controls-panel">
+          <h2>CONTROLS</h2>
+          <div class="controls-guide">
+            <div class="control-row">
+              <span class="key-cap">↑</span> <span class="key-cap">↓</span> <span class="key-cap">←</span> <span class="key-cap">→</span>
+              <span class="key-desc">Move Player</span>
+            </div>
+            <div class="control-row">
+              <span class="key-cap">W</span> <span class="key-cap">A</span> <span class="key-cap">S</span> <span class="key-cap">D</span>
+              <span class="key-desc">Alternative Move</span>
+            </div>
+            <div class="control-row">
+              <span class="key-cap">R</span>
+              <span class="key-desc">Retry Current Maze</span>
+            </div>
+            <div class="control-row">
+              <span class="key-cap">N</span>
+              <span class="key-desc">Generate New Maze</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions Panel -->
+        <div class="panel actions-panel">
+          <button class="btn btn-primary" id="btnNewGame">New Maze</button>
+          <button class="btn btn-secondary" id="btnRestart">Restart Seed</button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Game Over Modal -->
+  <dialog id="gameOverDialog" class="game-dialog modal-lost" closedby="closerequest" aria-labelledby="lostTitle">
+    <div class="modal-content">
+      <div class="modal-icon">💀</div>
+      <h2 id="lostTitle">GAME OVER</h2>
+      <p class="modal-reason" id="lostReason">Caught by the enemy!</p>
+      
+      <div class="modal-stats">
+        <div>
+          <span class="modal-stat-label">Coins Collected</span>
+          <span class="modal-stat-val" id="lostCoins">0 / 12</span>
+        </div>
+        <div>
+          <span class="modal-stat-label">Time Remaining</span>
+          <span class="modal-stat-val" id="lostTime">0s</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-modal-retry" id="btnLostRetry">Try Again</button>
+        <button class="btn btn-secondary btn-modal-new" id="btnLostNew">New Maze</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Victory Modal -->
+  <dialog id="victoryDialog" class="game-dialog modal-won" closedby="closerequest" aria-labelledby="winTitle">
+    <div class="modal-content">
+      <div class="modal-icon">🏆</div>
+      <h2 id="winTitle">VICTORY!</h2>
+      <p class="modal-reason">You successfully completed the maze!</p>
+      
+      <div class="modal-stats">
+        <div>
+          <span class="modal-stat-label">Coins Collected</span>
+          <span class="modal-stat-val" id="winCoins">12 / 12</span>
+        </div>
+        <div>
+          <span class="modal-stat-label">Time Remaining</span>
+          <span class="modal-stat-val" id="winTime">0s</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary btn-modal-new" id="btnWinNew">Next Level</button>
+        <button class="btn btn-secondary btn-modal-retry" id="btnWinRetry">Replay Seed</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Scripts -->
+  <script src="app.js"></script>
+</body>
+</html>
